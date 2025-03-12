@@ -12,106 +12,99 @@
 #include <string.h>
 
 #define MAX_CANDIDATOS 50
-#define MAX_NOME 100
 
-typedef struct{
-    char nome[MAX_NOME];
-    float notas_PE[4];
-    float notas_AC[5];
-    float notas_PP[10];
-    float notas_EB[3];
+
+typedef struct {
+    char nome[100];
+    float notas_PE[4];  
+    float notas_AC[5];  
+    float notas_PP[10]; 
+    float notas_EB[3];  
     float nota_final;
 } Candidato;
 
-void calcularNotaFinal (Candidato *candidato){
-    
-    float soma_PE = 0, soma_AC = 0, soma_PP = 0, soma_EB = 0;
-    float minPE, maxPE, minAC, maxAC, minPP, maxPP, minEB, maxEB;
-    
-    minPE = maxPE = candidato->notas_PE[0];
-    minAC = maxAC = candidato->notas_AC[0];
-    minPP = maxPP = candidato->notas_PP[0];
-    minEB = maxEB = candidato->notas_EB[0];
-    
-    for (int i = 0; i < 4; i++){
-        if(candidato->notas_PE[i] < minPE) minPE = candidato->notas_PE[i];
-        if(candidato->notas_PE[i] > maxPE) maxPE = candidato->notas_PE[i];
-        soma_PE += candidato->notas_PE[i];
-    }
-    
-    for (int i = 0; i < 5; i++){
-        if(candidato->notas_AC[i] < minAC) minAC = candidato->notas_AC[i];
-        if(candidato->notas_AC[i] > maxAC) maxAC = candidato->notas_AC[i];
-        soma_AC += candidato->notas_AC[i];
-    }
-    
-    for (int i = 0; i < 10; i++){
-        if(candidato->notas_PP[i] < minPP) minPP = candidato->notas_PP[i];
-        if(candidato->notas_PP[i] > maxPP) maxPP = candidato->notas_PP[i];
-        soma_PP += candidato->notas_PP[i];
-    }
-    
-    for (int i = 0; i < 3; i++){
-        if(candidato->notas_EB[i] < minEB) minEB = candidato->notas_EB[i];
-        if(candidato->notas_EB[i] > maxEB) maxEB = candidato->notas_EB[i];
-        soma_EB += candidato->notas_EB[i];
-    }
-    
-    soma_PE = soma_PE - minPE - maxPE;
-    soma_AC = soma_AC - minAC - maxAC;
-    soma_PP = soma_PP - minPP - maxPP;
-    soma_EB = soma_EB - minEB - maxEB;
-    
-    candidato->nota_final = (soma_PE * 0.3) + (soma_AC * 0.1) + (soma_PP * 0.4) + (soma_EB * 0.2);
-}
 
-int main(){
-    Candidato candidatos[MAX_CANDIDATOS];
-    int num_candidatos = 0;
-    
-    while (num_candidatos < MAX_CANDIDATOS){
-        
-        printf("Digite o nome do candidato: ");
-        scanf(" %[^\n]", candidatos[num_candidatos].nome);
-        
-        printf ("Digite as 4 notas da prova escrita (PE): ");
-            for (int i = 0; i < 4; i++){
-                scanf("%f", &candidatos[num_candidatos].notas_PE[i]);
-            }
-        
-        printf ("Digite as 5 notas da Análise Curricular (AC): ");
-            for (int i = 0; i < 5; i++){
-                scanf("%f", &candidatos[num_candidatos].notas_AC[i]);
-            }
-        
-        printf ("Digite as 10 notas da Prova Prática(PP): ");
-            for (int i = 0; i < 10; i++){
-                scanf("%f", &candidatos[num_candidatos].notas_PP[i]);
-            }
-        
-        printf ("Digite as 3 notas da Entrevista em Banca Avaliadora(EB): ");
-            for (int i = 0; i < 3; i++){
-                scanf("%f", &candidatos[num_candidatos].notas_EB[i]);
-            }
-            
-        calcularNotaFinal(&candidatos[num_candidatos]);
-        num_candidatos++;
-    }
-    
-    for (int i = 0; i < num_candidatos - 1; i++){
-        for (int j = i + 1; j < num_candidatos; j++){
-            if(candidatos[i].nota_final < candidatos[j].nota_final){
-                Candidato temp = candidatos[i];
-                candidatos[i] = candidatos[j];
-                candidatos[j] = temp;
-            }
+float calcular_nota(float *notas, int tamanho) {
+    float maior = notas[0], menor = notas[0], soma = 0.0;
+    int i, indice_maior = 0, indice_menor = 0;
+
+    for (i = 1; i < tamanho; i++) {
+        if (notas[i] > maior) {
+            maior = notas[i];
+            indice_maior = i;
+        }
+        if (notas[i] < menor) {
+            menor = notas[i];
+            indice_menor = i;
         }
     }
     
-    printf ("\n Classificação dos 5 melhores: \n");
-    for (int i = 0; i < 5 && i < num_candidatos; i++){
-        printf ("%d° lugar: %s - Nota Final: %2f\n", i + 1, candidatos[i].nome, candidatos[i].nota_final);
+    for (i = 0; i < tamanho; i++) {
+        if (i != indice_maior && i != indice_menor) {
+            soma += notas[i];
+        }
     }
-    
+
+    return soma;
+}
+
+
+int comparar(const void *a, const void *b) {
+    Candidato *c1 = (Candidato *)a;
+    Candidato *c2 = (Candidato *)b;
+    return (c2->nota_final > c1->nota_final) - (c2->nota_final < c1->nota_final);
+}
+
+int main() {
+    Candidato *candidatos;
+    int num_candidatos = 0, i, j;
+
+    printf("Quantos candidatos deseja inserir? (Máx. 50): ");
+    scanf("%d", &num_candidatos);
+    if (num_candidatos > MAX_CANDIDATOS || num_candidatos < 1) {
+        printf("Número inválido!\n");
+        return 1;
+    }
+
+    candidatos = (Candidato *)malloc(num_candidatos * sizeof(Candidato));
+    if (candidatos == NULL) {
+        printf("Erro de alocação de memória!\n");
+        return 1;
+    }
+
+    for (i = 0; i < num_candidatos; i++) {
+        printf("\nCandidato %d:\n", i + 1);
+        printf("Nome: ");
+        scanf(" %[^\n]", candidatos[i].nome);
+
+        printf("Digite as 4 notas da Prova Escrita (PE): ");
+        for (j = 0; j < 4; j++) scanf("%f", &candidatos[i].notas_PE[j]);
+
+        printf("Digite as 5 notas da Análise Curricular (AC): ");
+        for (j = 0; j < 5; j++) scanf("%f", &candidatos[i].notas_AC[j]);
+
+        printf("Digite as 10 notas da Prova Prática (PP): ");
+        for (j = 0; j < 10; j++) scanf("%f", &candidatos[i].notas_PP[j]);
+
+        printf("Digite as 3 notas da Entrevista em Banca (EB): ");
+        for (j = 0; j < 3; j++) scanf("%f", &candidatos[i].notas_EB[j]);
+
+        float PE = calcular_nota(candidatos[i].notas_PE, 4);
+        float AC = calcular_nota(candidatos[i].notas_AC, 5);
+        float PP = calcular_nota(candidatos[i].notas_PP, 10);
+        float EB = calcular_nota(candidatos[i].notas_EB, 3);
+
+        candidatos[i].nota_final = (PE * 0.3) + (AC * 0.1) + (PP * 0.4) + (EB * 0.2);
+    }
+
+    qsort(candidatos, num_candidatos, sizeof(Candidato), comparar);
+
+    printf("\n--- Classificação dos 5 Melhores Candidatos ---\n");
+    for (i = 0; i < (num_candidatos < 5 ? num_candidatos : 5); i++) {
+        printf("%dº Lugar: %s - Nota Final: %.2f\n", i + 1, candidatos[i].nome, candidatos[i].nota_final);
+    }
+
+    free(candidatos);
+
     return 0;
 }
