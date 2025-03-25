@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------------*/
 /*   FATEC-São Caetano do Sul                 Estrutura de Dados                    */
-/*                         Id da Atividade: Atividade B3-2                          */
+/*                         Id da Atividade: Atividade B1-3                          */
 /*             Objetivo: Programa de Restaurante                                    */
 /*                                                                                  */
 /*                                  Autor: Milena Miwa Sawada                       */
