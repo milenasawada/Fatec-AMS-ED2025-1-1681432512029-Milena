@@ -10,180 +10,232 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-typedef enum { PENDENTE, EM_PREPARO, PRONTO, ENTREGUE } StatusPedido;
-
-
-typedef struct Restaurante {
-    int num_pedido;
-    char nome[30];
-    char descricao[100];
-    int qtde;
-    StatusPedido status;
-    struct Restaurante *prox;
-} Restaurante;
-
-
-Restaurante* criarLista() {
+ 
+typedef struct Comanda
+{
+    int NumeroPedido;
+    char NomeCliente[100];
+    char DescricaoPrato[100];
+    int Quantidade;
+    char StatusPedido[50];
+    struct Comanda *prox;
+} Comanda;
+ 
+Comanda *criarLista()
+{
     return NULL;
 }
-
-
-Restaurante* inserirRestaurante(Restaurante* lista, int num_pedido, char nome[], char descricao[], int qtde, StatusPedido status) {
-    Restaurante* novoRestaurante = (Restaurante*) malloc(sizeof(Restaurante));
-    if (!novoRestaurante) {
-        printf("Erro ao alocar memória!\n");
+ 
+Comanda *inserirpedido(Comanda *lista, int NumeroPedido, const char *NomeCliente, const char *DescricaoPrato, int Quantidade, const char *StatusPedido)
+{
+    Comanda *novo = (Comanda *)malloc(sizeof(Comanda));
+    if (!novo)
+    {
+        printf("Erro ao alocar memória.\n");
         return lista;
     }
-    novoRestaurante->num_pedido = num_pedido;
-    strcpy(novoRestaurante->nome, nome);
-    strcpy(novoRestaurante->descricao, descricao);
-    novoRestaurante->qtde = qtde;
-    novoRestaurante->status = status;
-    novoRestaurante->prox = lista; 
-    return novoRestaurante;
+ 
+    novo->NumeroPedido = NumeroPedido;
+    strcpy(novo->NomeCliente, NomeCliente);
+    strcpy(novo->DescricaoPrato, DescricaoPrato);
+    novo->Quantidade = Quantidade;
+ 
+    if (strcmp(StatusPedido, "1") == 0)
+    {
+        strcpy(novo->StatusPedido, "Pendente");
+    }
+    else if (strcmp(StatusPedido, "2") == 0)
+    {
+        strcpy(novo->StatusPedido, "Em preparo");
+    }
+    else if (strcmp(StatusPedido, "3") == 0)
+    {
+        strcpy(novo->StatusPedido, "Pronto");
+    }
+    else if (strcmp(StatusPedido, "4") == 0)
+    {
+        strcpy(novo->StatusPedido, "Entregue");
+    }
+    else
+    {
+        strcpy(novo->StatusPedido, "Desconhecido");
+    }
+ 
+    novo->prox = lista;
+    return novo;
 }
-
-
-void atualizarStatus(Restaurante* lista, int num_pedido, StatusPedido novo_status) {
-    Restaurante* atual = lista;
-    while (atual) {
-        if (atual->num_pedido == num_pedido) {
-            atual->status = novo_status;
-            printf("Status do pedido #%d atualizado com sucesso!\n", num_pedido);
+ 
+Comanda *obterpedido(Comanda *lista, int NumeroPedido)
+{
+    Comanda *atual = lista;
+    while (atual != NULL)
+    {
+        if (atual->NumeroPedido == NumeroPedido)
+        {
+            return atual;
+        }
+        atual = atual->prox;
+    }
+    return NULL;
+}
+ 
+void alterarStatus(Comanda *lista, int NumeroPedido, const char *StatusNovo)
+{
+    Comanda *atual = lista;
+    while (atual != NULL)
+    {
+        if (atual->NumeroPedido == NumeroPedido)
+        {
+            if (strcmp(StatusNovo, "1") == 0)
+            {
+                strcpy(atual->StatusPedido, "Pendente");
+            }
+            else if (strcmp(StatusNovo, "2") == 0)
+            {
+                strcpy(atual->StatusPedido, "Em preparo");
+            }
+            else if (strcmp(StatusNovo, "3") == 0)
+            {
+                strcpy(atual->StatusPedido, "Pronto");
+            }
+            else if (strcmp(StatusNovo, "4") == 0)
+            {
+                strcpy(atual->StatusPedido, "Entregue");
+            }
+            else
+            {
+                printf("Status inválido.\n");
+            }
             return;
         }
         atual = atual->prox;
     }
-    printf("Pedido não encontrado!\n");
 }
-
-
-void exibirPedidos(Restaurante* lista) {
-    Restaurante* atual = lista;
-    if (!atual) {
-        printf("Nenhum pedido encontrado.\n");
-        return;
-    }
-    printf("\nLista de Pedidos:\n");
-    while (atual) {
-        printf("Pedido #%d | Cliente: %s | Prato: %s | Quantidade: %d | Status: %d\n",
-               atual->num_pedido, atual->nome, atual->descricao, atual->qtde, atual->status);
-        atual = atual->prox;
-    }
-}
-
-
-Restaurante* deletarPedido(Restaurante* lista, int num_pedido) {
-    Restaurante* atual = lista;
-    Restaurante* anterior = NULL;
-
-    while (atual) {
-        if (atual->num_pedido == num_pedido) {
-            if (anterior) {
-                anterior->prox = atual->prox; 
-            } else {
-                lista = atual->prox; 
+ 
+Comanda *deletarpedido(Comanda *lista, int NumeroPedido)
+{
+    Comanda *atual = lista;
+    Comanda *anterior = NULL;
+ 
+    while (atual != NULL)
+    {
+        if (atual->NumeroPedido == NumeroPedido)
+        {
+            if (anterior == NULL)
+            {
+                lista = atual->prox;
+            }
+            else
+            {
+                anterior->prox = atual->prox;
             }
             free(atual);
-            printf("Pedido #%d removido com sucesso!\n", num_pedido);
             return lista;
         }
         anterior = atual;
         atual = atual->prox;
     }
-
-    printf("Pedido não encontrado!\n");
+    printf("Pedido não encontrado.\n");
     return lista;
 }
-
-
-void liberarLista(Restaurante* lista) {
-    Restaurante* atual = lista;
-    while (atual) {
-        Restaurante* temp = atual;
-        atual = atual->prox;
-        free(temp);
+ 
+void liberarlista(Comanda *lista)
+{
+    Comanda *atual = lista;
+    Comanda *proximo;
+ 
+    while (atual != NULL)
+    {
+        proximo = atual->prox;
+        free(atual);
+        atual = proximo;
     }
-    printf("Memória liberada com sucesso!\n");
 }
-
-
-int main() {
-    Restaurante* lista = criarLista();
-    int opcao, num_pedido, qtde, status;
-    char nome[30], descricao[100];
-
-    do {
-        printf("\nMenu:\n");
-        printf("1. Inserir Pedido\n");
-        printf("2. Atualizar Status do Pedido\n");
-        printf("3. Exibir Pedidos\n");
-        printf("4. Excluir Pedido\n");
-        printf("5. Sair\n");
-        printf("Escolha uma opção: ");
+ 
+int main()
+{
+    Comanda *lista = criarLista();
+ 
+    int numPed;
+    char nome_cliente[100];
+    char desc_prato[100];
+    int qtde;
+    char status[10];
+    int opcao = 6;
+ 
+    while (opcao != 0)
+    {
+        printf("\nRESTAURANTE:\n\n");
+        printf("1 - Inserir pedido\n");
+        printf("2 - Alterar status do pedido\n");
+        printf("3 - Deletar pedido\n");
+        printf("4 - Obter pedido\n");
+        printf("0 - Sair\n");
+        printf("\nDigite uma opção: ");
         scanf("%d", &opcao);
-        getchar(); 
-
-        switch (opcao) {
-            case 1:
-                printf("Número do Pedido: ");
-                scanf("%d", &num_pedido);
-                getchar();
-                
-                printf("Nome do Cliente: ");
-                fgets(nome, 30, stdin);
-                nome[strcspn(nome, "\n")] = '\0';
-
-                printf("Descrição do Prato: ");
-                fgets(descricao, 100, stdin);
-                descricao[strcspn(descricao, "\n")] = '\0';
-
-                printf("Quantidade: ");
-                scanf("%d", &qtde);
-                getchar();
-
-                lista = inserirRestaurante(lista, num_pedido, nome, descricao, qtde, PENDENTE);
-                printf("\nPedido inserido com sucesso!\n");
-                break;
-
-            case 2:
-                printf("Número do Pedido a atualizar: ");
-                scanf("%d", &num_pedido);
-                getchar();
-
-                printf("Novo Status (0 = Pendente, 1 = Em Preparo, 2 = Pronto, 3 = Entregue): ");
-                scanf("%d", &status);
-                getchar();
-
-                if (status >= PENDENTE && status <= ENTREGUE) {
-                    atualizarStatus(lista, num_pedido, (StatusPedido)status);
-                } else {
-                    printf("Status inválido!\n");
-                }
-                break;
-
-            case 3:
-                exibirPedidos(lista);
-                break;
-
-            case 4:
-                printf("Número do Pedido a excluir: ");
-                scanf("%d", &num_pedido);
-                getchar();
-                lista = deletarPedido(lista, num_pedido);
-                break;
-
-            case 5:
-                liberarLista(lista);
-                printf("Saindo...\n");
-                break;
-
-            default:
-                printf("Opção inválida!\n");
+ 
+        switch (opcao)
+        {
+        case 1:
+            printf("\nInserir Pedido\n\n");
+            printf("Número do pedido: ");
+            scanf("%d", &numPed);
+            printf("Nome do cliente: ");
+            scanf("%s[^\n]", nome_cliente);
+            getchar();
+            printf("Descrição do prato: ");
+            scanf("%s[^\n]", desc_prato);
+            getchar();
+            printf("Quantidade de pratos: ");
+            scanf("%d", &qtde);
+            printf("Status do pedido (1- Pendente, 2- Em preparo, 3- Pronto, 4- Entregue): ");
+            scanf("%s[^\n]", status);
+            getchar();
+            lista = inserirpedido(lista, numPed, nome_cliente, desc_prato, qtde, status);
+            printf("\nPedido registrado com sucesso!\n");
+            break;
+        case 2:
+            printf("\nAlterar Status do Pedido\n\n");
+            printf("Digite o número do pedido: ");
+            scanf("%d", &numPed);
+            printf("Novo status: ");
+            scanf("%s", status);
+            alterarStatus(lista, numPed, status);
+            printf("\nStatus atualizado com sucesso!\n");
+            break;
+        case 3:
+            printf("\nDeletar Pedido\n\n");
+            printf("Digite o número do pedido: ");
+            scanf("%d", &numPed);
+            lista = deletarpedido(lista, numPed);
+            printf("\nDeletado com sucesso!\n");
+            break;
+        case 4:
+            printf("\nObter Pedido\n\n");
+            printf("Digite o número do pedido: ");
+            scanf("%d", &numPed);
+            Comanda *pedido = obterpedido(lista, numPed);
+            if (pedido)
+            {
+                printf("Pedido #%d\n", pedido->NumeroPedido);
+                printf("Cliente: %s\n", pedido->NomeCliente);
+                printf("Descrição: %s\n", pedido->DescricaoPrato);
+                printf("Quantidade: %d\n", pedido->Quantidade);
+                printf("Status: %s\n", pedido->StatusPedido);
+            }
+            else
+            {
+                printf("\nPedido não encontrado.\n");
+            }
+            break;
+        case 0:
+            printf("\nSaindo...\n");
+            liberarlista(lista);
+            break;
+        default:
+            printf("Opção inválida!\n");
         }
-    } while (opcao != 5);
-
+    }
+ 
     return 0;
 }
