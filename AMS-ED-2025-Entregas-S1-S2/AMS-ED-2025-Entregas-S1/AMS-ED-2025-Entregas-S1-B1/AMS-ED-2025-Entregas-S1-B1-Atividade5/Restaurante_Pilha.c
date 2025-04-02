@@ -3,7 +3,7 @@
 /*                         Id da Atividade: Atividade B1-5                          */
 /*          Objetivo: Programa de Restaurante - transformando lista ligada em pilha */
 /*                                                                                  */
-/*                                  Autores: Isabella Monsalles Barbosa             */
+/*                                  Autoras: Isabella Monsalles Barbosa             */
 /*                                           Milena Miwa Sawada                     */
 /*                                                                   Data:01/04/2025*/
 /*----------------------------------------------------------------------------------*/
