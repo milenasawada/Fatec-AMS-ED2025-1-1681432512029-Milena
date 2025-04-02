@@ -10,182 +10,115 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
- 
+
 typedef struct Comanda {
     int NumeroPedido;
     char NomeCliente[100];
     char DescricaoPrato[100];
     int Quantidade;
     char StatusPedido[50];
+    struct Comanda *prox;
 } Comanda;
- 
- 
+
 typedef struct Pilha {
-    Comanda *dados; 
-    int topo;      
-    int capacidade; 
+    Comanda *topo;
 } Pilha;
- 
- 
-Pilha* criarPilha(int capacidade) {
-    Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
-    pilha->capacidade = capacidade;
-    pilha->topo = -1;
-    pilha->dados = (Comanda *)malloc(capacidade * sizeof(Comanda));
-    return pilha;
-}
- 
- 
-int pilhaCheia(Pilha *pilha) {
-    return pilha->topo == pilha->capacidade - 1;
+
+Pilha *criarPilha() {
+    Pilha *p = (Pilha *)malloc(sizeof(Pilha));
+    p->topo = NULL;
+    return p;
 }
 
-int pilhaVazia(Pilha *pilha) {
-    return pilha->topo == -1;
-}
- 
- 
-void push(Pilha *pilha, Comanda pedido) {
-    if (pilhaCheia(pilha)) {
-        printf("Pilha cheia! Não é possível inserir mais pedidos.\n");
+void push(Pilha *p, int NumeroPedido, const char *NomeCliente, const char *DescricaoPrato, int Quantidade, const char *StatusPedido) {
+    Comanda *novo = (Comanda *)malloc(sizeof(Comanda));
+    if (!novo) {
+        printf("Erro ao alocar memória.\n");
         return;
     }
-    pilha->dados[++pilha->topo] = pedido;
-    printf("\nPedido inserido na pilha!\n");
+    novo->NumeroPedido = NumeroPedido;
+    strcpy(novo->NomeCliente, NomeCliente);
+    strcpy(novo->DescricaoPrato, DescricaoPrato);
+    novo->Quantidade = Quantidade;
+    strcpy(novo->StatusPedido, StatusPedido);
+    novo->prox = p->topo;
+    p->topo = novo;
 }
- 
- 
-Comanda pop(Pilha *pilha) {
-    if (pilhaVazia(pilha)) {
-        printf("Pilha vazia! Não há pedidos para remover.\n");
-        Comanda vazio = {0};  
-        return vazio;
+
+void pop(Pilha *p) {
+    if (p->topo == NULL) {
+        printf("A pilha está vazia!\n");
+        return;
     }
-    return pilha->dados[pilha->topo--];
+    Comanda *removido = p->topo;
+    p->topo = p->topo->prox;
+    free(removido);
 }
- 
- 
-Comanda topo(Pilha *pilha) {
-    if (pilhaVazia(pilha)) {
-        printf("Pilha vazia! Não há pedidos no topo.\n");
-        Comanda vazio = {0};  
-        return vazio;
+
+void peek(Pilha *p) {
+    if (p->topo == NULL) {
+        printf("A pilha está vazia!\n");
+        return;
     }
-    return pilha->dados[pilha->topo];
+    printf("Pedido #%d\n", p->topo->NumeroPedido);
+    printf("Cliente: %s\n", p->topo->NomeCliente);
+    printf("Descrição: %s\n", p->topo->DescricaoPrato);
+    printf("Quantidade: %d\n", p->topo->Quantidade);
+    printf("Status: %s\n", p->topo->StatusPedido);
 }
- 
- 
-void alterarStatus(Pilha *pilha, int NumeroPedido, const char *StatusNovo) {
-    for (int i = 0; i <= pilha->topo; i++) {
-        if (pilha->dados[i].NumeroPedido == NumeroPedido) {
-            strcpy(pilha->dados[i].StatusPedido, StatusNovo);
-            printf("\nStatus do pedido #%d alterado para: %s\n", NumeroPedido, StatusNovo);
-            return;
-        }
+
+void liberarPilha(Pilha *p) {
+    while (p->topo != NULL) {
+        pop(p);
     }
-    printf("\nPedido não encontrado na pilha.\n");
+    free(p);
 }
- 
- 
-void imprimirPedido(Comanda pedido) {
-    printf("Pedido #%d\n", pedido.NumeroPedido);
-    printf("Cliente: %s\n", pedido.NomeCliente);
-    printf("Descrição: %s\n", pedido.DescricaoPrato);
-    printf("Quantidade: %d\n", pedido.Quantidade);
-    printf("Status: %s\n", pedido.StatusPedido);
-}
- 
- 
-void liberarPilha(Pilha *pilha) {
-    free(pilha->dados);
-    free(pilha);
-}
- 
+
 int main() {
-    Pilha *pilha = criarPilha(10);  
- 
-    int numPed;
-    char nome_cliente[100];
-    char desc_prato[100];
-    int qtde;
-    char status[10];
-    int opcao = 6;
- 
-    while (opcao != 0) {
-        printf("\nRESTAURANTE:\n\n");
+    Pilha *pedidos = criarPilha();
+    int opcao, numPed, qtde;
+    char nome_cliente[100], desc_prato[100], status[50];
+
+    do {
+        printf("\nRESTAURANTE:\n");
         printf("1 - Inserir pedido\n");
-        printf("2 - Alterar status do pedido\n");
-        printf("3 - Remover pedido (desfazer)\n");
-        printf("4 - Obter pedido do topo\n");
+        printf("2 - Visualizar topo\n");
+        printf("3 - Remover pedido\n");
         printf("0 - Sair\n");
-        printf("\nDigite uma opção: ");
+        printf("Digite uma opção: ");
         scanf("%d", &opcao);
- 
+
         switch (opcao) {
-        case 1:
-            printf("\nInserir Pedido\n\n");
-            printf("Número do pedido: ");
-            scanf("%d", &numPed);
-            printf("Nome do cliente: ");
-            scanf("%s[^\n]", nome_cliente);
-            getchar();
-            printf("Descrição do prato: ");
-            scanf("%s[^\n]", desc_prato);
-            getchar();
-            printf("Quantidade de pratos: ");
-            scanf("%d", &qtde);
-            printf("Status do pedido (1- Pendente, 2- Em preparo, 3- Pronto, 4- Entregue): ");
-            scanf("%s[^\n]", status);
-            getchar();
- 
-            Comanda novoPedido = {numPed, "", "", qtde, ""};
-            strcpy(novoPedido.NomeCliente, nome_cliente);
-            strcpy(novoPedido.DescricaoPrato, desc_prato);
-            if (strcmp(status, "1") == 0) {
-                strcpy(novoPedido.StatusPedido, "Pendente");
-            } else if (strcmp(status, "2") == 0) {
-                strcpy(novoPedido.StatusPedido, "Em preparo");
-            } else if (strcmp(status, "3") == 0) {
-                strcpy(novoPedido.StatusPedido, "Pronto");
-            } else if (strcmp(status, "4") == 0) {
-                strcpy(novoPedido.StatusPedido, "Entregue");
-            } else {
-                strcpy(novoPedido.StatusPedido, "Desconhecido");
-            }
- 
-            push(pilha, novoPedido);
-            break;
-        case 2:
-            printf("\nAlterar Status do Pedido\n\n");
-            printf("Digite o número do pedido: ");
-            scanf("%d", &numPed);
-            printf("Novo status (1- Pendente, 2- Em preparo, 3- Pronto, 4- Entregue): ");
-            scanf("%s", status);
-            alterarStatus(pilha, numPed, status);
-            break;
-        case 3:
-            printf("\nRemover Pedido (desfazer)\n\n");
-            Comanda pedidoRemovido = pop(pilha);
-            if (pedidoRemovido.NumeroPedido != 0) {  
-                printf("Pedido #%d removido da pilha.\n", pedidoRemovido.NumeroPedido);
-            }
-            break;
-        case 4:
-            printf("\nObter Pedido do Topo\n\n");
-            Comanda pedidoTopo = topo(pilha);
-            if (pedidoTopo.NumeroPedido != 0) {
-                imprimirPedido(pedidoTopo);
-            }
-            break;
-        case 0:
-            printf("\nSaindo...\n");
-            liberarPilha(pilha);
-            break;
-        default:
-            printf("Opção inválida!\n");
+            case 1:
+                printf("Número do pedido: ");
+                scanf("%d", &numPed);
+                printf("Nome do cliente: ");
+                scanf("%s", nome_cliente);
+                printf("Descrição do prato: ");
+                scanf("%s", desc_prato);
+                printf("Quantidade: ");
+                scanf("%d", &qtde);
+                printf("Status (Pendente, Em preparo, Pronto, Entregue): ");
+                scanf("%s", status);
+                push(pedidos, numPed, nome_cliente, desc_prato, qtde, status);
+                printf("Pedido registrado com sucesso!\n");
+                break;
+            case 2:
+                printf("Último pedido registrado:\n");
+                peek(pedidos);
+                break;
+            case 3:
+                pop(pedidos);
+                printf("Último pedido removido!\n");
+                break;
+            case 0:
+                printf("Saindo...\n");
+                liberarPilha(pedidos);
+                break;
+            default:
+                printf("Opção inválida!\n");
         }
-    }
- 
+    } while (opcao != 0);
+
     return 0;
 }
